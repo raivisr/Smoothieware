@@ -284,7 +284,9 @@ void init() {
     THEKERNEL->slow_ticker->start();
 }
 
+#ifdef SPI_FLASH
 static uint32_t ticks_since_last_spiflash_periodic = 0;
+#endif 
 
 int main()
 {
