@@ -28,7 +28,7 @@ FileConfigSource::FileConfigSource(string config_file, const char *name)
 
 bool FileConfigSource::readLine(string& line, int lineno, FILE *fp)
 {
-    char buf[132];
+    char buf[512];
     char *l= fgets(buf, sizeof(buf)-1, fp);
     if(l != NULL) {
         if(buf[strlen(l)-1] != '\n') {

@@ -47,6 +47,7 @@
 #include "libs/USBDevice/USB.h"
 #include "libs/USBDevice/USBMSD/USBMSD.h"
 #include "libs/USBDevice/USBMSD/SDCard.h"
+#include "libs/USBDevice/USBMSD/SPIFlash.h"
 #include "libs/USBDevice/USBSerial/USBSerial.h"
 #include "libs/USBDevice/DFU.h"
 #include "libs/SDFAT.h"
@@ -66,21 +67,20 @@
 #define dfu_enable_checksum  CHECKSUM("dfu_enable")
 #define watchdog_timeout_checksum  CHECKSUM("watchdog_timeout")
 
-
 // USB Stuff
 SDCard sd  __attribute__ ((section ("AHBSRAM0"))) (P0_9, P0_8, P0_7, P0_6);      // this selects SPI1 as the sdcard as it is on Smoothieboard
 //SDCard sd(P0_18, P0_17, P0_15, P0_16);  // this selects SPI0 as the sdcard
 //SDCard sd(P0_18, P0_17, P0_15, P2_8);  // this selects SPI0 as the sdcard witrh a different sd select
 
-USB u __attribute__ ((section ("AHBSRAM0")));
-USBSerial usbserial __attribute__ ((section ("AHBSRAM0"))) (&u);
-#ifndef DISABLEMSD
-USBMSD msc __attribute__ ((section ("AHBSRAM0"))) (&u, &sd);
-#else
-USBMSD *msc= NULL;
+#ifdef SPI_FLASH
+SPIFlash spiFlash  __attribute__ ((section ("AHBSRAM0"))) (P0_18, P0_17, P0_15, P0_16, P2_10, P2_11);
 #endif
 
-SDFAT mounter __attribute__ ((section ("AHBSRAM0"))) ("sd", &sd);
+USB u __attribute__ ((section ("AHBSRAM0")));
+USBSerial usbserial __attribute__ ((section ("AHBSRAM0"))) (&u);
+
+bool useSPIFlash = false;
+SDFAT* mounter = nullptr;
 
 GPIO leds[5] = {
     GPIO(P1_18),
@@ -98,18 +98,42 @@ void init() {
         leds[i]= 0;
     }
 
+    bool sdok = false;
+
+#ifdef SPI_FLASH
+    sdok = (spiFlash.disk_initialize() == 0);
+
+    if(sdok) {
+        useSPIFlash = true;
+    } else {
+        sdok = (sd.disk_initialize() == 0);
+    }
+#else
+    sdok = (sd.disk_initialize() == 0);
+#endif
+
+    MSD_Disk* disk = nullptr;
+    
+#ifdef SPI_FLASH
+    disk = useSPIFlash ? (MSD_Disk*)&spiFlash : (MSD_Disk*)&sd;
+#else
+    disk = (MSD_Disk*)&sd;
+#endif
+
+    mounter = new (AHB0) SDFAT("sd", disk);
+
     Kernel* kernel = new Kernel();
 
     kernel->streams->printf("Smoothie Running @%ldMHz\r\n", SystemCoreClock / 1000000);
     SimpleShell::version_command("", kernel->streams);
 
-    bool sdok= (sd.disk_initialize() == 0);
     if(!sdok) kernel->streams->printf("SDCard failed to initialize\r\n");
 
     #ifdef NONETWORK
         kernel->streams->printf("NETWORK is disabled\r\n");
     #endif
 
+    USBMSD* msc = nullptr;
 #ifdef DISABLEMSD
     // attempt to be able to disable msd in config
     if(sdok && !kernel->config->value( disable_msd_checksum )->by_default(true)->as_bool()){
@@ -122,6 +146,8 @@ void init() {
         msc= NULL;
         kernel->streams->printf("MSD is disabled\r\n");
     }
+#else
+    msc = new (AHB0) USBMSD(&u, disk);
 #endif
 
     // Create and add main modules
@@ -197,7 +223,7 @@ void init() {
         kernel->add_module( msc );
     }
 #else
-    kernel->add_module( &msc );
+    kernel->add_module( msc );
 #endif
 
     kernel->add_module( &usbserial );
@@ -258,6 +284,8 @@ void init() {
     THEKERNEL->slow_ticker->start();
 }
 
+static uint32_t ticks_since_last_spiflash_periodic = 0;
+
 int main()
 {
     init();
@@ -271,5 +299,12 @@ int main()
         }
         THEKERNEL->call_event(ON_MAIN_LOOP);
         THEKERNEL->call_event(ON_IDLE);
+
+#ifdef SPI_FLASH
+        if (useSPIFlash && ++ticks_since_last_spiflash_periodic > 10000) {
+            ticks_since_last_spiflash_periodic = 0;
+            spiFlash.periodic();
+        }
+#endif
     }
 }

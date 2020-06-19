@@ -96,7 +96,7 @@ DRESULT disk_ioctl (
 				}
 			}
 		case GET_BLOCK_SIZE:
-			*((DWORD*)buff) = 1; // default when not known
+			*((DWORD*)buff) = 512; // default when not known
 			return RES_OK;
 
 	}

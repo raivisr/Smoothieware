@@ -336,11 +336,11 @@ void SimpleShell::ls_command( string parameters, StreamOutput *stream )
     }
 }
 
-extern SDFAT mounter;
+extern SDFAT* mounter;
 
 void SimpleShell::remount_command( string parameters, StreamOutput *stream )
 {
-    mounter.remount();
+    mounter->remount();
     stream->printf("remounted\r\n");
 }
 
