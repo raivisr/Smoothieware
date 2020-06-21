@@ -65,6 +65,7 @@ enum DEFNS {MIN_PIN, MAX_PIN, MAX_TRAVEL, FAST_RATE, SLOW_RATE, RETRACT, DIRECTI
 #define homing_order_checksum            CHECKSUM("homing_order")
 #define move_to_origin_checksum          CHECKSUM("move_to_origin_after_home")
 #define park_after_home_checksum         CHECKSUM("park_after_home")
+#define retract_after_each_checksum      CHECKSUM("retract_after_each")  
 
 #define alpha_trim_checksum              CHECKSUM("alpha_trim_mm")
 #define beta_trim_checksum               CHECKSUM("beta_trim_mm")
@@ -416,6 +417,8 @@ void Endstops::get_global_configs()
     }else{
         this->park_after_home= false;
     }
+
+    this->retract_after_each = THEKERNEL->config->value(retract_after_each_checksum)->by_default(false)->as_bool();
 }
 void Endstops::on_idle(void*)
 {
@@ -799,6 +802,10 @@ void Endstops::home(axis_bitmap_t a)
     }
 
     this->status = NOT_HOMING;
+
+    if(retract_after_each) {
+        back_off_home(a);
+    }
 }
 
 void Endstops::process_home_command(Gcode* gcode)
@@ -974,6 +981,10 @@ void Endstops::process_home_command(Gcode* gcode)
                 p.homed= true;
             }
         }
+    }
+
+    if(retract_after_each) {
+        return;
     }
 
     // on some systems where 0,0 is bed center it is nice to have home goto 0,0 after homing
