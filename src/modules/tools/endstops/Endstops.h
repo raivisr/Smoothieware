@@ -97,6 +97,7 @@ class Endstops : public Module{
             bool home_z_first:1;
             bool move_to_origin_after_home:1;
             bool park_after_home:1;
+            bool retract_after_each:1;
             bool limit_enabled:1;
             volatile bool trigger_halt:1;
             volatile bool limits_activated:1;
