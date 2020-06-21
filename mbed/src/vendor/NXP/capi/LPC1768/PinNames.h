@@ -78,8 +78,8 @@ typedef enum {
     LED3 = P1_21,
     LED4 = P1_23,
 #endif
-    USBTX = P0_2,
-    USBRX = P0_3,
+    USBTX = P0_0,
+    USBRX = P0_1,
 
     // Not connected
     NC = (int)0xFFFFFFFF
