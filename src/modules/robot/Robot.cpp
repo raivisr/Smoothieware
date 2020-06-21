@@ -73,14 +73,14 @@
 #define  morgan_checksum                     CHECKSUM("morgan")
 
 // new-style actuator stuff
-#define  actuator_checksum                   CHEKCSUM("actuator")
+#define  actuator_checksum                   CHECKSUM("actuator")
 
 #define  step_pin_checksum                   CHECKSUM("step_pin")
-#define  dir_pin_checksum                    CHEKCSUM("dir_pin")
+#define  dir_pin_checksum                    CHECKSUM("dir_pin")
 #define  en_pin_checksum                     CHECKSUM("en_pin")
 
 #define  step_slave_pin_checksum             CHECKSUM("step_slave_pin")
-#define  dir_slave_pin_checksum              CHEKCSUM("dir_slave_pin")
+#define  dir_slave_pin_checksum              CHECKSUM("dir_slave_pin")
 #define  en_slave_pin_checksum               CHECKSUM("en_slave_pin")
 
 #define  max_speed_checksum                  CHECKSUM("max_speed")
