@@ -31,6 +31,10 @@ ENABLE_DEBUG_MONITOR?=0
 # it is also the baud rate used to report any errors found while parsing the config file
 DEFAULT_SERIAL_BAUD_RATE?=9600
 
+ifeq "$(SPI_FLASH)" "1"
+DEFINES += -DSPI_FLASH
+endif
+
 ifeq "$(ENABLE_DEBUG_MONITOR)" "1"
 # Can add MRI_UART_BAUD=115200 to next line if GDB fails to connect to MRI.
 # Tends to happen on some Linux distros but not Windows and OS X.
