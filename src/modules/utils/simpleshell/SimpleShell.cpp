@@ -654,9 +654,13 @@ void SimpleShell::version_command( string parameters, StreamOutput *stream)
     Version vers;
     uint32_t dev = getDeviceType();
     const char *mcu = (dev & 0x00100000) ? "LPC1769" : "LPC1768";
+    stream->printf("VertigoCNC Neptune v1.0\r\n");
     stream->printf("Build version: %s, Build date: %s, MCU: %s, System Clock: %ldMHz\r\n", vers.get_build(), vers.get_build_date(), mcu, SystemCoreClock / 1000000);
     #ifdef CNC
     stream->printf("  CNC Build ");
+    #endif
+    #ifdef SPI_FLASH
+    stream->printf("  SPI_FLASH Build ");
     #endif
     #ifdef DISABLEMSD
     stream->printf("  NOMSD Build\r\n");

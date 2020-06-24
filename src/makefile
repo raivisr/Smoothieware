@@ -35,6 +35,10 @@ ifeq "$(SPI_FLASH)" "1"
 DEFINES += -DSPI_FLASH
 endif
 
+ifeq "$(DISABLEMSD)" "1"
+DEFINES += -DDISABLEMSD
+endif
+
 ifeq "$(ENABLE_DEBUG_MONITOR)" "1"
 # Can add MRI_UART_BAUD=115200 to next line if GDB fails to connect to MRI.
 # Tends to happen on some Linux distros but not Windows and OS X.
