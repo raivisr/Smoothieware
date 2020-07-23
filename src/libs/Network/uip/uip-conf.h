@@ -104,7 +104,7 @@ typedef unsigned short uip_stats_t;
  *
  * \hideinitializer
  */
-#define UIP_CONF_BUFFER_SIZE     400
+#define UIP_CONF_BUFFER_SIZE     0x600
 
 #define UIP_CONF_BROADCAST 1
 
